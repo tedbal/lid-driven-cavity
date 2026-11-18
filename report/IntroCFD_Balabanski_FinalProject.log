@@ -1,0 +1,308 @@
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2025/dev/Debian) (preloaded format=pdflatex 2026.8.23)  17 NOV 2026 21:56
+entering extended mode
+ restricted \write18 enabled.
+ file:line:error style messages enabled.
+ %&-line parsing enabled.
+**IntroCFD_Balabanski_FinalProject.tex
+(./IntroCFD_Balabanski_FinalProject.tex
+LaTeX2e <2024-11-01> patch level 2
+L3 programming layer <2025-01-18>
+(/home/tedbal/texmf/tex/latex/aiaa-tc.cls
+Document Class: aiaa-tc 2004/11/23 v3.8 AIAA technical conference paper
+(/usr/share/texlive/texmf-dist/tex/latex/base/article.cls
+Document Class: article 2024/06/29 v1.4n Standard LaTeX document class
+(/usr/share/texlive/texmf-dist/tex/latex/base/size10.clo
+File: size10.clo 2024/06/29 v1.4n Standard LaTeX file (size option)
+)
+\c@part=\count196
+\c@section=\count197
+\c@subsection=\count198
+\c@subsubsection=\count199
+\c@paragraph=\count266
+\c@subparagraph=\count267
+\c@figure=\count268
+\c@table=\count269
+\abovecaptionskip=\skip49
+\belowcaptionskip=\skip50
+\bibindent=\dimen141
+)
+(/usr/share/texlive/texmf-dist/tex/latex/geometry/geometry.sty
+Package: geometry 2020/01/02 v5.9 Page Geometry
+
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/keyval.sty
+Package: keyval 2022/05/29 v1.15 key=value parser (DPC)
+\KV@toks@=\toks17
+)
+(/usr/share/texlive/texmf-dist/tex/generic/iftex/ifvtex.sty
+Package: ifvtex 2019/10/25 v1.7 ifvtex legacy package. Use iftex instead.
+
+(/usr/share/texlive/texmf-dist/tex/generic/iftex/iftex.sty
+Package: iftex 2024/12/12 v1.0g TeX engine tests
+))
+\Gm@cnth=\count270
+\Gm@cntv=\count271
+\c@Gm@tempcnt=\count272
+\Gm@bindingoffset=\dimen142
+\Gm@wd@mp=\dimen143
+\Gm@odd@mp=\dimen144
+\Gm@even@mp=\dimen145
+\Gm@layoutwidth=\dimen146
+\Gm@layoutheight=\dimen147
+\Gm@layouthoffset=\dimen148
+\Gm@layoutvoffset=\dimen149
+\Gm@dimlist=\toks18
+)
+(/usr/share/texlive/texmf-dist/tex/latex/cite/overcite.sty
+Package: overcite 2003/05/27  v 4.0
+)
+(/usr/share/texlive/texmf-dist/tex/latex/cite/cite.sty
+LaTeX Info: Redefining \cite on input line 302.
+LaTeX Info: Redefining \nocite on input line 332.
+Package: cite 2015/02/27  v 5.5
+LaTeX Info: Redefining \cite on input line 441.
+)
+(/usr/share/texlive/texmf-dist/tex/latex/fancyhdr/fancyhdr.sty
+Package: fancyhdr 2025/02/07 v5.2 Extensive control of page headers and footers
+
+\f@nch@headwidth=\skip51
+\f@nch@offset@elh=\skip52
+\f@nch@offset@erh=\skip53
+\f@nch@offset@olh=\skip54
+\f@nch@offset@orh=\skip55
+\f@nch@offset@elf=\skip56
+\f@nch@offset@erf=\skip57
+\f@nch@offset@olf=\skip58
+\f@nch@offset@orf=\skip59
+\f@nch@height=\skip60
+\f@nch@footalignment=\skip61
+\f@nch@widthL=\skip62
+\f@nch@widthC=\skip63
+\f@nch@widthR=\skip64
+\@temptokenb=\toks19
+)
+(/usr/share/texlive/texmf-dist/tex/latex/lastpage/lastpage.sty
+Package: lastpage 2025/01/27 v2.1e lastpage: 2.09 or 2e? (HMM)
+
+(/usr/share/texlive/texmf-dist/tex/latex/lastpage/lastpage2e.sty
+Package: lastpage2e 2025/01/27 v2.1e Decide which 2e lastpage version to use (H
+MM)
+
+(/usr/share/texlive/texmf-dist/tex/latex/lastpage/lastpagemodern.sty
+Package: lastpagemodern 2025-01-27 v2.1e Refers to last page's name (HMM; JPG)
+\c@lastpagecount=\count273
+) 
+)) (/usr/share/texlive/texmf-dist/tex/latex/graphics/graphicx.sty
+Package: graphicx 2021/09/16 v1.2d Enhanced LaTeX Graphics (DPC,SPQR)
+
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/graphics.sty
+Package: graphics 2024/08/06 v1.4g Standard LaTeX Graphics (DPC,SPQR)
+
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/trig.sty
+Package: trig 2023/12/02 v1.11 sin cos tan (DPC)
+)
+(/usr/share/texlive/texmf-dist/tex/latex/graphics-cfg/graphics.cfg
+File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
+)
+Package graphics Info: Driver file: pdftex.def on input line 106.
+
+(/usr/share/texlive/texmf-dist/tex/latex/graphics-def/pdftex.def
+File: pdftex.def 2024/04/13 v1.2c Graphics/color driver for pdftex
+))
+\Gin@req@height=\dimen150
+\Gin@req@width=\dimen151
+)
+(/usr/share/texlive/texmf-dist/tex/latex/tools/array.sty
+Package: array 2024/10/17 v2.6g Tabular extension package (FMi)
+\col@sep=\dimen152
+\ar@mcellbox=\box52
+\extrarowheight=\dimen153
+\NC@list=\toks20
+\extratabsurround=\skip65
+\backup@length=\skip66
+\ar@cellbox=\box53
+)
+\aiaa@overhang=\skip67
+\c@aiaa@cthanks=\count274
+\c@aiaa@cfootnote=\count275
+)
+(/usr/share/texlive/texmf-dist/tex/latex/tools/varioref.sty
+Package: varioref 2024/05/23 v1.6g package for extended references (FMi)
+\c@vrcnt=\count276
+)
+(/usr/share/texlive/texmf-dist/tex/latex/wrapfig/wrapfig.sty
+\wrapoverhang=\dimen154
+\WF@size=\dimen155
+\c@WF@wrappedlines=\count277
+\WF@box=\box54
+\WF@everypar=\toks21
+Package: wrapfig 2003/01/31  v 3.6
+)
+(/usr/share/texlive/texmf-dist/tex/latex/threeparttable/threeparttable.sty
+Package: threeparttable 2003/06/13  v 3.0
+\@tempboxb=\box55
+)
+(/usr/share/texlive/texmf-dist/tex/latex/tools/dcolumn.sty
+Package: dcolumn 2023/07/08 v1.06 decimal alignment package (DPC)
+)
+(/usr/share/texlive/texmf-dist/tex/latex/nomencl/nomencl.sty
+Package: nomencl 2021/11/10 v5.6 Nomenclature package
+
+(/usr/share/texlive/texmf-dist/tex/latex/xkeyval/xkeyval.sty
+Package: xkeyval 2022/06/16 v2.9 package option processing (HA)
+
+(/usr/share/texlive/texmf-dist/tex/generic/xkeyval/xkeyval.tex
+(/usr/share/texlive/texmf-dist/tex/generic/xkeyval/xkvutils.tex
+\XKV@toks=\toks22
+\XKV@tempa@toks=\toks23
+)
+\XKV@depth=\count278
+File: xkeyval.tex 2014/12/03 v2.7a key=value parser (HA)
+))
+(/usr/share/texlive/texmf-dist/tex/latex/base/ifthen.sty
+Package: ifthen 2024/03/16 v1.1e Standard LaTeX ifthen package (DPC)
+)
+(/usr/share/texlive/texmf-dist/tex/latex/koma-script/tocbasic.sty
+Package: tocbasic 2024/10/24 v3.43 KOMA-Script package (handling toc-files)
+
+(/usr/share/texlive/texmf-dist/tex/latex/koma-script/scrbase.sty
+Package: scrbase 2024/10/24 v3.43 KOMA-Script package (KOMA-Script-independent 
+basics and keyval usage)
+
+(/usr/share/texlive/texmf-dist/tex/latex/koma-script/scrlfile.sty
+Package: scrlfile 2024/10/24 v3.43 KOMA-Script package (file load hooks)
+
+(/usr/share/texlive/texmf-dist/tex/latex/koma-script/scrlfile-hook.sty
+Package: scrlfile-hook 2024/10/24 v3.43 KOMA-Script package (using LaTeX hooks)
+
+
+(/usr/share/texlive/texmf-dist/tex/latex/koma-script/scrlogo.sty
+Package: scrlogo 2024/10/24 v3.43 KOMA-Script package (logo)
+)))
+Applying: [2021/05/01] Usage of raw or classic option list on input line 254.
+Already applied: [0000/00/00] Usage of raw or classic option list on input line
+ 370.
+)
+\scr@dte@tocline@numberwidth=\skip68
+\scr@dte@tocline@numbox=\box56
+)
+Package tocbasic Info: omitting babel extension for `nlo'
+(tocbasic)             because of missing \bbl@set@language on input line 187.
+Package tocbasic Info: omitting babel extension for `nls'
+(tocbasic)             because of missing \bbl@set@language on input line 188.
+\nomlabelwidth=\dimen156
+\nom@tempdim=\dimen157
+\nomitemsep=\skip69
+)
+\@glossaryfile=\write3
+\openout3 = `IntroCFD_Balabanski_FinalProject.glo'.
+
+
+Writing glossary file IntroCFD_Balabanski_FinalProject.glo 
+(/usr/share/texlive/texmf-dist/tex/latex/subfigure/subfigure.sty
+Package: subfigure 2002/03/15 v2.1.5 subfigure package
+\subfigtopskip=\skip70
+\subfigcapskip=\skip71
+\subfigcaptopadj=\dimen158
+\subfigbottomskip=\skip72
+\subfigcapmargin=\dimen159
+\subfiglabelskip=\skip73
+\c@subfigure=\count279
+\c@lofdepth=\count280
+\c@subtable=\count281
+\c@lotdepth=\count282
+
+****************************************
+* Local config file subfigure.cfg used *
+****************************************
+(/usr/share/texlive/texmf-dist/tex/latex/subfigure/subfigure.cfg)
+\subfig@top=\skip74
+\subfig@bottom=\skip75
+)
+(/usr/share/texlive/texmf-dist/tex/latex/subfigmat/subfigmat.sty
+Package: subfigmat 1999/02/27 v1.0 Subfigure Matrix Package
+\sfm@width=\skip76
+\sfmcolsep=\skip77
+\c@sfm@count=\count283
+)
+(/usr/share/texlive/texmf-dist/tex/latex/fancyvrb/fancyvrb.sty
+Package: fancyvrb 2024/01/20 4.5c verbatim text (tvz,hv)
+\FV@CodeLineNo=\count284
+\FV@InFile=\read2
+\FV@TabBox=\box57
+\c@FancyVerbLine=\count285
+\FV@StepNumber=\count286
+\FV@OutFile=\write4
+)
+(/usr/share/texlive/texmf-dist/tex/latex/lettrine/lettrine.sty
+File: lettrine.sty 2025-01-30 v2.80 (Daniel Flipo)
+
+(/usr/share/texlive/texmf-dist/tex/latex/l3packages/xfp/xfp.sty
+(/usr/share/texlive/texmf-dist/tex/latex/l3kernel/expl3.sty
+Package: expl3 2025-01-18 L3 programming layer (loader) 
+
+(/usr/share/texlive/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
+File: l3backend-pdftex.def 2024-05-08 L3 backend support: PDF output (pdfTeX)
+\l__color_backend_stack_int=\count287
+\l__pdf_internal_box=\box58
+))
+Package: xfp 2024-08-16 L3 Floating point unit
+)
+\c@DefaultLines=\count288
+\c@DefaultDepth=\count289
+\DefaultFindent=\dimen160
+\DefaultNindent=\dimen161
+\DefaultSlope=\dimen162
+\DiscardVskip=\dimen163
+\L@lettrine=\box59
+\L@lbox=\box60
+\L@tbox=\box61
+\c@L@lines=\count290
+\c@L@depth=\count291
+\L@Pindent=\dimen164
+\L@Findent=\dimen165
+\L@Nindent=\dimen166
+\L@lraise=\dimen167
+\L@first=\dimen168
+\L@next=\dimen169
+\L@slope=\dimen170
+\L@height=\dimen171
+\L@novskip=\dimen172
+\L@target@ht=\dimen173
+\L@target@dp=\dimen174
+\L@target@tht=\dimen175
+\LettrineWidth=\dimen176
+\LettrineHeight=\dimen177
+\LettrineDepth=\dimen178
+\L@finalht=\dimen179
+\L@finaldp=\dimen180
+
+Loading lettrine.cfg
+(/usr/share/texlive/texmf-dist/tex/latex/lettrine/lettrine.cfg)
+\Lettrine@tweaks=\toks24
+\Llist@everypar=\toks25
+)
+
+! LaTeX Error: File `dropping.sty' not found.
+
+Type X to quit or <RETURN> to proceed,
+or enter new name. (Default extension: sty)
+
+Enter file name: 
+./IntroCFD_Balabanski_FinalProject.tex:63: Emergency stop.
+<read *> 
+         
+l.63  \usepackage
+                 [colorlinks]{hyperref}%  hyperlinks [must be loaded after d...
+*** (cannot \read from terminal in nonstop modes)
+
+ 
+Here is how much of TeX's memory you used:
+ 4464 strings out of 475178
+ 78651 string characters out of 5766539
+ 508999 words of memory out of 5000000
+ 27414 multiletter control sequences out of 15000+600000
+ 558837 words of font info for 36 fonts, out of 8000000 for 9000
+ 14 hyphenation exceptions out of 8191
+ 110i,0n,107p,294b,36s stack positions out of 10000i,1000n,20000p,200000b,200000s
+./IntroCFD_Balabanski_FinalProject.tex:63:  ==> Fatal error occurred, no output
+ PDF file produced!
