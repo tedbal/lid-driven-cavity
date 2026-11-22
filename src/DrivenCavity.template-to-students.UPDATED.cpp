@@ -296,7 +296,7 @@ inline double pow4(double x)                      /* Returns x^4 ... Duplicates 
   FILE *fp3; /* For writing the restart file */
   FILE *fp4; /* For reading the restart file */  
   FILE *fp5; /* For output of final DE norms (only for MMS)*/  
-//$$$$$$   FILE *fp6; /* For debug: Uncomment for debugging. */  
+  FILE *fp6; /* For debug: Uncomment for debugging. */  
 
 /***********************************************************************************************************/
 /*      NOTE: The Main routine for this C++ code is found at the end                                       */
@@ -377,11 +377,11 @@ void output_file_headers()
   /*               u = [p, u, v]^T               */  
   /* Set up output files (history and solution)  */    
 
-    fp1 = fopen("./history.dat","w");
+    fp1 = fopen("../data/history.dat","w");
     fprintf(fp1,"TITLE = \"Cavity Iterative Residual History\"\n");
     fprintf(fp1,"variables=\"Iteration\"\"Time(s)\"\"Res1\"\"Res2\"\"Res3\"\n");
 
-    fp2 = fopen("./cavity.dat","w");
+    fp2 = fopen("../data/cavity.dat","w");
     fprintf(fp2,"TITLE = \"Cavity Field Data\"\n");
     if(imms==1)
     {
@@ -450,7 +450,7 @@ void initial(int& ninit, double& rtime, double resinit[neq], Array3& u, Array3& 
     }  
     else if(irstr==1)  /* Restarting from previous run (file 'restart.in') */
     {
-        fp4 = fopen("./restart.in","r"); /* Note: 'restart.in' must exist! */
+        fp4 = fopen("../data/restart.in","r"); /* Note: 'restart.in' must exist! */
         if (fp4==NULL)
         {
             printf("Error opening restart file. Stopping.\n");
@@ -497,25 +497,33 @@ void bndry( Array3& u )
 
     // iterate through each x-point
     for (int i { 0 }; i < imax; ++i) {
-      // set the x- and y-velocities along the top
+      // set the x- and y-velocities along the bottom
       u(i, 0, 1) = uinf;
       u(i, 0, 2) = 0;
 
-      // set the x- and y-velocities along the bottom
-      u(i, jmax, 1) = 0;
-      u(i, jmax, 2) = 0;
+      // set the x- and y-velocities along the top
+      u(i, jmax-1, 1) = 0;
+      u(i, jmax-1, 2) = 0;
+
+      // calculate the pressure BC at the bottom and top walls
+      u(i, 0, 0) = two * u(i, 1, 0) - u(i, 2, 0);
+      u(i, jmax-1, 0) = two * u(i, jmax-2, 0) - u(i, jmax-3, 0);
     }
 
 
     // iterate through each y-point
     for (int j { 0 }; j < jmax; ++j) {
-      // set the x- and y-velocities along the top
+      // set the x- and y-velocities along the left
       u(0, j, 1) = 0;
       u(0, j, 2) = 0;
 
-      // set the x- and y-velocities along the bottom
-      u(imax, j, 1) = 0;
-      u(imax, j, 2) = 0;
+      // set the x- and y-velocities along the right
+      u(imax-1, j, 1) = 0;
+      u(imax-1, j, 2) = 0;
+
+      // calculate the pressure BC at the left and right walls
+      u(0, j, 0) = two * u(1, j, 0) - u(2, j, 0);
+      u(imax-1, j, 0) = two * u(imax-2, j, 0) - u(imax-3, j, 0);
     }
 
 
@@ -641,7 +649,7 @@ void write_output(int n, Array3& u, Array2& dt, double resinit[neq], double rtim
     }
 
     /* Restart file: overwrites every 'iterout' iteration */
-    fp3 = fopen("./restart.out","w");       
+    fp3 = fopen("../data/restart.out","w");       
     fprintf(fp3,"%d %e\n", n, rtime);    
     fprintf(fp3,"%e %e %e\n", resinit[0], resinit[1], resinit[2]);
     for(i=0; i<imax; i++)
@@ -875,13 +883,47 @@ void compute_time_step( Array3& u, Array2& dt, double& dtmin )
     /* !************************************************************** */
 
     // calculate the convective stability limit
-    beta2 = max(
-
+    // initialize values for the eigenvalues in x and y, to compare agains
+    double lambda_x_max { zero };
+    double lambda_y_max { zero };
     
+    for (int i { 0 }; i < imax; ++i) {
+      for (int j { 0 }; j < jmax; ++j) {
+	// calculate the local velocity squared and the corresponding time-derivative preconditioning term
+	uvel2 = pow2(u(i, j, 1)) + pow2(u(i, j, 2));
+	beta2 = max(uvel2, rkappa*vel2ref);
 
+	// calculate the eigenvalues in x,t and y,t
+	lambda_x = half*(abs(u(i, j, 1)) + sqrt(pow2(u(i, j, 1)) + four * beta2));
+	lambda_y = half*(abs(u(i, j, 2)) + sqrt(pow2(u(i, j, 2)) + four * beta2));
 
-    // calculate the diffusive stability limit
+	// check if it's greater than the max, and if it is update
+	if ( lambda_x > lambda_x_max ) {
+	  lambda_x_max = lambda_x;
+	}
+	if ( lambda_y > lambda_y_max ) {
+	  lambda_y_max = lambda_y;
+	}
+      }
+    }
 
+    // get the max lambda in both (x,t) and (y,t) and calculate the convective timestep limit
+    lambda_max = max(lambda_x_max, lambda_y_max);
+    dtconv = min(dx, dy) / lambda_max;
+    
+    // calculate the viscous stability limit
+    dtvisc = (dx * dy) / (four * (rmu/rho));
+
+    // get the minimum time step and the actual timestep
+    dtmin = min(dtconv, dtvisc);
+
+    // calculate the dt as a globally timestepped value
+    for (int i { 0 }; i < imax; ++i) {
+      for (int j { 0 }; j < jmax; ++j) {
+	dt(i, j) = cfl * dtmin;
+      }
+    }
+    
 }  
 
 /**************************************************************************/
@@ -909,8 +951,65 @@ void Compute_Artificial_Viscosity( Array3& u, Array2& viscx, Array2& viscy )
 /* !************ADD CODING HERE FOR INTRO CFD STUDENTS************ */
 /* !************************************************************** */
 
+    // TODO: implement the boundary conditions
+    
+    
+    // iterate through the rows/columns
+    for (int i { 2 }; i < imax-2; ++i) {
+      for (int j { 2 }; j < jmax-2; ++j) {
+	// calculate the local velocity squared and the corresponding time-derivative preconditioning term
+	
+	uvel2 = pow2(u(i,j,1)) + pow2(u(i,j,2));
+	beta2 = max(uvel2, rkappa*vel2ref);
 
+	// calculate the eigenvalues in x,t and y,t
+	lambda_x = half*(abs(u(i,j,1)) + sqrt(pow2(u(i,j,1)) + four * beta2));
+	lambda_y = half*(abs(u(i,j,2)) + sqrt(pow2(u(i,j,2)) + four * beta2));
 
+	// calculate the fourth partial derivative of the pressure
+	d4pdx4 = (1/pow4(dx)) * (u(i+2,j,0) - four * u(i+1,j,0) + six * u(i,j,0) - four * u(i-1,j,0) + u(i-2,j,0));
+	d4pdy4 = (1/pow4(dy)) * (u(i,j+2,0) - four * u(i,j+1,0) + six * u(i,j,0) - four * u(i,j-1,0) + u(i,j-2,0));
+
+	// compute and assign the artificial viscosities
+	artviscx(i, j) = - lambda_x * Cx * pow3(dx) * d4pdx4 / beta2;
+	artviscy(i, j) = - lambda_y * Cy * pow3(dy) * d4pdy4 / beta2;
+	}
+      }
+
+    // use a second order method for the artificial viscosity boundary conditions
+    // BCs for the artificial viscosity across top/bottom boundary
+    for (int i { 0 }; i < imax; ++i) {
+      // x-component
+      artviscx(i, 1) = two * artviscx(i, 2) - artviscx(i, 3);
+      artviscx(i, 0) = two * artviscx(i, 1) - artviscx(i, 2);
+      
+      artviscx(i, jmax-2) = two * artviscx(i, jmax-3) - artviscx(i, jmax-4);
+      artviscx(i, jmax-1) = two * artviscx(i, jmax-2) - artviscx(i, jmax-3);
+
+      // y-component
+      artviscy(i, 1) = two * artviscy(i, 2) - artviscy(i, 3);
+      artviscy(i, 0) = two * artviscy(i, 1) - artviscy(i, 2);
+      
+      artviscy(i, jmax-2) = two * artviscy(i, jmax-3) - artviscy(i, jmax-4);
+      artviscy(i, jmax-1) = two * artviscy(i, jmax-2) - artviscy(i, jmax-3);
+    }
+
+    // BCs for the artificial viscosity across left/right boundary
+    for (int j { 0 }; j < jmax; ++j) {
+      // x-component
+      artviscx(1, j) = two * artviscx(2, j) - artviscx(3, j);
+      artviscx(0, j) = two * artviscx(1, j) - artviscx(2, j);
+      
+      artviscx(imax-2, j) = two * artviscx(imax-3, j) - artviscx(imax-4, j);
+      artviscx(imax-1, j) = two * artviscx(imax-2, j) - artviscx(imax-3, j);
+
+      // y-component
+      artviscy(1, j) = two * artviscy(2, j) - artviscy(3, j);
+      artviscy(0, j) = two * artviscy(1, j) - artviscy(2, j);
+      
+      artviscy(imax-2, j) = two * artviscy(imax-3, j) - artviscy(imax-4, j);
+      artviscy(imax-1, j) = two * artviscy(imax-2, j) - artviscy(imax-3, j);
+    }
 }
 
 /**************************************************************************/
@@ -945,7 +1044,11 @@ void SGS_forward_sweep( Array3& u, Array2& viscx, Array2& viscy, Array2& dt, Arr
 /* !************ADD CODING HERE FOR INTRO CFD STUDENTS************ */
 /* !************************************************************** */
 
-
+    for (int i { 1 }; i < imax-1; ++i) {
+      for (int j { 1 }; j < jmax-1; ++i) {
+	 dpdt
+      }
+    }
 
 
 }
@@ -1227,12 +1330,12 @@ int main()
     /*-------End Set Function Pointers-------------------------------*/
 
     /* Debug output: Uncomment and modify if debugging */
-    //$$$$$$ fp6 = fopen("./Debug.dat","w");
-    //$$$$$$ fprintf(fp6,"TITLE = \"Debug Data Data\"\n");
-    //$$$$$$ fprintf(fp6,"variables=\"x(m)\"\"y(m)\"\"visc-x\"\"visc-y\"\n");
-    //$$$$$$ fprintf(fp6, "zone T=\"n=%d\"\n",n);
-    //$$$$$$ fprintf(fp6, "I= %d J= %d\n",imax, jmax);
-    //$$$$$$ fprintf(fp6, "DATAPACKING=POINT\n");
+    fp6 = fopen("../data/Debug.dat","w");
+    fprintf(fp6,"TITLE = \"Debug Data Data\"\n");
+    fprintf(fp6,"variables=\"x(m)\"\"y(m)\"\"visc-x\"\"visc-y\"\n");
+    fprintf(fp6, "zone T=\"n=%d\"\n",n);
+    fprintf(fp6, "I= %d J= %d\n",imax, jmax);
+    fprintf(fp6, "DATAPACKING=POINT\n");
 
     /* Set derived input quantities */
     set_derived_inputs();
@@ -1305,7 +1408,7 @@ notconverged:
     /* Close open files */
     fclose(fp1);
     fclose(fp2);
-    //$$$$$$   fclose(fp6); /* Uncomment for debug output */
+    fclose(fp6); /* Uncomment for debug output */
 
     return 0;
 }
