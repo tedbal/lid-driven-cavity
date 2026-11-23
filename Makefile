@@ -5,8 +5,10 @@
 # compiler, flags, target
 CXX = g++
 CXXFLAGS = -std=c++11 -O2 -Wall -Wextra
+DEBUGFLAGS = -std=c++11 -O0 -g -Wall -Wextra
 TARGET = ./bin/cavity
 SRC = ./src/DrivenCavity.template-to-students.UPDATED.cpp
+PLTTARGET = ./src/plot.py
 
 # default target
 all: $(TARGET)
@@ -15,9 +17,21 @@ all: $(TARGET)
 $(TARGET): $(SRC)
 	$(CXX) $(CXXFLAGS) $(SRC) -o $(TARGET)
 
+# debugging compilation
+debug:
+	$(CXX) $(DEBUGFLAGS) $(SRC) -o $(TARGET)
+
+# run the solver using gdb
+gdb: debug
+	gdb $(TARGET)
+
 # run the solver
 run: $(TARGET)
-	./bin/$(TARGET)
+	$(TARGET)
+
+# plot the plotting utility
+plt: run
+	python $(PLTTARGET)
 
 # remove binary and data files
 clean:
