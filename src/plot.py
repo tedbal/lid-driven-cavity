@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from matplotlib.ticker import FuncFormatter
 import re
+import sys
 
 # convert all columns in a df to numeric
 def convert_all_numeric(df):
@@ -32,8 +33,15 @@ def read_soln_size(datafile):
 
 # define a function to read the solution
 def read_solution(datafile, n=-1):
-    # set the columns, and initialize the "blocks" corresponding to an iteration
-    columns = ['x', 'y', 'p', 'u', 'v']
+    # set the columns, and check if it is an exact solution or not
+    with open(datafile, 'r') as fi:
+        next(fi)
+        if "-exact" in fi.readline():
+            columns = ['x', 'y', 'p', 'u', 'v', 'pe', 'ue', 've', 'dep', 'deu', 'dev']
+        else:
+            columns = ['x', 'y', 'p', 'u', 'v']
+
+    # initialize the "blocks" corresponding to an iteration
     blocks = []
     current_block = []
     reading_data = False # flag to see if you are reading the data now
@@ -153,11 +161,21 @@ def plot_solution(res, nx, ny, savefile=None, axes=None):
 
 
 if __name__ == "__main__":
+    # parse in the filename
+    if len(sys.argv) > 1:
+        datapath = sys.argv[1]
+    else:
+        datapath = "data/"
+
+    # define the history and results file
+    historyfile = f"{datapath}/history.dat"
+    resultsfile = f"{datapath}/cavity.dat"
+        
     # read and plot the history
-    history = read_convergence_history("data/history.dat")
+    history = read_convergence_history(historyfile)
     plot_iteration_history(history)
 
     # read in the results
-    res = read_solution("data/cavity.dat")
-    nx, ny = read_soln_size("data/cavity.dat")
+    res = read_solution(resultsfile)
+    nx, ny = read_soln_size(resultsfile)
     plot_solution(res, nx, ny)

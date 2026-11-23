@@ -11,8 +11,8 @@
 using namespace std;
 
 /************* Following are fixed parameters for array sizes **************/
-#define imax 65     /* Number of points in the x-direction (use odd numbers only) */
-#define jmax 65     /* Number of points in the y-direction (use odd numbers only) */
+#define imax 127     /* Number of points in the x-direction (use odd numbers only) */
+#define jmax 127     /* Number of points in the y-direction (use odd numbers only) */
 #define neq 3       /* Number of equation to be solved ( = 3: mass, x-mtm, y-mtm) */
 
 /**********************************************/
@@ -43,7 +43,7 @@ using namespace std;
   const int nmax = 500000;             /* Maximum number of iterations */
   const int iterout = 5000;             /* Number of time steps between solution output */
   const int imms = 0;                   /* Manufactured solution flag: = 1 for manuf. sol., = 0 otherwise */
-  const int isgs = 0;                   /* Symmetric Gauss-Seidel  flag: = 1 for SGS, = 0 for point Jacobi */
+  const int isgs = 1;                   /* Symmetric Gauss-Seidel  flag: = 1 for SGS, = 0 for point Jacobi */
   const int irstr = 0;                  /* Restart flag: = 1 for restart (file 'restart.in', = 0 for initial run */
   const int ipgorder = 0;               /* Order of pressure gradient: 0 = 2nd, 1 = 3rd (not needed) */
   const int lim = 0;                    /* variable to be used as the limiter sensor (= 0 for pressure) */
@@ -54,7 +54,7 @@ using namespace std;
   const double Cy = 0.01;               /* Parameter for 4th order artificial viscosity in y */
   const double toler = 1.e-10;          /* Tolerance for iterative residual convergence */
   const double rkappa = 0.1;            /* Time derivative preconditioning constant */
-  const double Re = 100.0;              /* Reynolds number = rho*Uinf*L/rmu */
+  const double Re = 1000.0;              /* Reynolds number = rho*Uinf*L/rmu */
   const double pinf = 0.801333844662;   /* Initial pressure (N/m^2) -> from MMS value at cavity center */
   const double uinf = 1.0;              /* Lid velocity (m/s) */
   const double rho = 1.0;               /* Density (kg/m^3) */
@@ -1036,25 +1036,54 @@ void SGS_forward_sweep( Array3& u, Array2& viscx, Array2& viscy, Array2& dt, Arr
     double uvel2;       //velocity squared at node
     double beta2;       //Beta squared parameter for time derivative preconditioning
 
+    double dti;
+
     /* Symmetric Gauss-Siedel: Forward Sweep */
 
 /* !************************************************************** */
 /* !************ADD CODING HERE FOR INTRO CFD STUDENTS************ */
 /* !************************************************************** */
 
+    // i have implemented this almost the same as the point jacobi
+    // except where the index i-1 or j-1 is used, use "u" instead of "uold"
+    
     for (int i { 1 }; i < imax-1; ++i) {
-      for (int j { 1 }; j < jmax-1; ++i) {
-	// calculate the pressure derivatives
-	dpdx = (u(i+1, j, 0) - u(i-1, j, 0)) / pow2(dx);
-	dpdy = (u(i, j+1, 0) - u(i, j-1, 0)) / pow2(dy);
+      for (int j { 1 }; j < jmax-1; ++j) {
+	// calculate derivatives of the pressure term
+	dpdx = (u(i+1,j,0) - u(i-1,j,0)) / (two * dx);
+	dpdy = (u(i,j+1,0) - u(i,j-1,0)) / (two * dy);
 
-	// calculate the u derivatives
-	dudx = (u(i+1,j,1) - u(i-1,j,1)) / pow2(dx);
-	dudy = (u(i,j+1,1) - u(i,j-1,1)) / pow2(dy);
-	
+	// calculate the u-derivatives
+	dudx = (u(i+1,j,1) - u(i-1,j,1)) / (two * dx);
+	dudy = (u(i,j+1,1) - u(i,j-1,1)) / (two * dy);
+	d2udx2 = (u(i-1,j,1) - two * u(i,j,1) + u(i+1,j,1)) / pow2(dx);
+	d2udy2 = (u(i,j-1,1) - two * u(i,j,1) + u(i,j+1,1)) / pow2(dy);
+
+	// calculate the v-derivatives
+	dvdx = (u(i+1,j,2) - u(i-1,j,2)) / (two * dx);
+	dvdy = (u(i,j+1,2) - u(i,j-1,2)) / (two * dy);
+	d2vdx2 = (u(i-1,j,2) - two * u(i,j,2) + u(i+1,j,2)) / pow2(dx);
+	d2vdy2 = (u(i,j-1,2) - two * u(i,j,2) + u(i,j+1,2)) / pow2(dy);
+
+	// calculate the squared velocity and the value of beta
+	uvel2 = pow2(u(i,j,1)) + pow2(u(i,j,2));
+	beta2 = max(uvel2, rkappa*vel2ref);
+	dti = dt(i, j);
+
+	// update the three terms in order
+	// start with the pressure update from the continuity equation
+	// then the u-velocity update from the x-momentum equation
+	// and the v-velocity update from the y-momentum equation
+	u(i,j,0) = u(i,j,0) - beta2 * dti * rho * (dudx + dvdy) +
+	  beta2 * dti * (viscx(i,j) + viscy(i,j));
+
+	u(i,j,1) = u(i,j,1) - dti * u(i,j,1) * dudx - dti * u(i,j,2) * dudy -
+	  (dti/rho) * dpdx + dti * (rmu/rho) * d2udx2 + dti * (rmu/rho) * d2udy2;
+
+	u(i,j,2) = u(i,j,2) - dti * u(i,j,1) * dvdx - dti * u(i,j,2) * dvdy -
+	  (dti/rho) * dpdy + dti * (rmu/rho) * d2vdx2 + dti * (rmu/rho) * d2vdy2;
       }
     }
-
 
 }
 
@@ -1084,6 +1113,7 @@ void SGS_backward_sweep( Array3& u, Array2& viscx, Array2& viscy, Array2& dt, Ar
     double uvel2;       //Velocity squared at node
     double beta2;       //Beta squared parameter for time derivative preconditioning
 
+    double dti;
     /* Symmetric Gauss-Siedel: Backward Sweep  */
 
 
@@ -1091,7 +1121,47 @@ void SGS_backward_sweep( Array3& u, Array2& viscx, Array2& viscy, Array2& dt, Ar
 /* !************ADD CODING HERE FOR INTRO CFD STUDENTS************ */
 /* !************************************************************** */
 
+    // i have implemented this almost exactly the same as the point jacobi
+    // except where the index i+1 or j+1 is used i use "u" instead of "uold"
+    // and also i have flipped the order of the iteration
+    
+    for (int i { imax-1 }; i > 1; --i) {
+      for (int j { jmax-1 }; j > 1; --j) {
+	// calculate derivatives of the pressure term
+	dpdx = (u(i+1,j,0) - u(i-1,j,0)) / (two * dx);
+	dpdy = (u(i,j+1,0) - u(i,j-1,0)) / (two * dy);
 
+	// calculate the u-derivatives
+	dudx = (u(i+1,j,1) - u(i-1,j,1)) / (two * dx);
+	dudy = (u(i,j+1,1) - u(i,j-1,1)) / (two * dy);
+	d2udx2 = (u(i-1,j,1) - two * u(i,j,1) + u(i+1,j,1)) / pow2(dx);
+	d2udy2 = (u(i,j-1,1) - two * u(i,j,1) + u(i,j+1,1)) / pow2(dy);
+
+	// calculate the v-derivatives
+	dvdx = (u(i+1,j,2) - u(i-1,j,2)) / (two * dx);
+	dvdy = (u(i,j+1,2) - u(i,j-1,2)) / (two * dy);
+	d2vdx2 = (u(i-1,j,2) - two * u(i,j,2) + u(i+1,j,2)) / pow2(dx);
+	d2vdy2 = (u(i,j-1,2) - two * u(i,j,2) + u(i,j+1,2)) / pow2(dy);
+
+	// calculate the squared velocity and the value of beta
+	uvel2 = pow2(u(i,j,1)) + pow2(u(i,j,2));
+	beta2 = max(uvel2, rkappa*vel2ref);
+	dti = dt(i, j);
+
+	// update the three terms in order
+	// start with the pressure update from the continuity equation
+	// then the u-velocity update from the x-momentum equation
+	// and the v-velocity update from the y-momentum equation
+	u(i,j,0) = u(i,j,0) - beta2 * dti * rho * (dudx + dvdy) +
+	  beta2 * dti * (viscx(i,j) + viscy(i,j));
+
+	u(i,j,1) = u(i,j,1) - dti * u(i,j,1) * dudx - dti * u(i,j,2) * dudy -
+	  (dti/rho) * dpdx + dti * (rmu/rho) * d2udx2 + dti * (rmu/rho) * d2udy2;
+
+	u(i,j,2) = u(i,j,2) - dti * u(i,j,1) * dvdx - dti * u(i,j,2) * dvdy -
+	  (dti/rho) * dpdy + dti * (rmu/rho) * d2vdx2 + dti * (rmu/rho) * d2vdy2;
+      }
+    }
 
 
 }
@@ -1290,10 +1360,42 @@ void Discretization_Error_Norms( Array3& u )
 /* !************************************************************** */
 /* !************ADD CODING HERE FOR INTRO CFD STUDENTS************ */
 /* !************************************************************** */
+      // initialize each of the norms
+      for (int k { 0 }; k < neq; ++k) {
+	rL1norm[k] = zero;
+	rL2norm[k] = zero;
+	rLinfnorm[k] = zero;
+      }
 
+      
+      // iterate through each of the grid points and equations
+      for (int i { 0 }; i < imax; ++i) {
+	// calculate the x-coordiante
+	x = xmin + i * (xmax - xmin) / imax;
+	
+	for (int j { 0 }; j < jmax; ++j) {
+	  // calculate the y-coordinate
+	  y = ymin + j * (ymax - ymin) / jmax;
+	    
+	  for (int k { 0 }; k < neq; ++k) { 
+	    // calculate the difference between the exact solution and the cfd
+	    DE = fabs(u(i,j,k) - umms(x,y,k));
 
+	    // calculate each of the norms
+	    rL1norm[k] += DE;
+	    rL2norm[k] += pow2(DE);
+	    if (DE > rLinfnorm[k]) {
+	      rLinfnorm[k] = DE;
+	    }
+	    
+	  }
+	}
+      }
 
-
+      // sqrt the L2 norm
+      for (int k { 0 }; k < neq; ++k) {
+	rL2norm[k] = sqrt(rL2norm[k]);
+      }
     }
 }
 
