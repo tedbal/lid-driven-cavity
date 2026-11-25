@@ -11,8 +11,8 @@
 using namespace std;
 
 /************* Following are fixed parameters for array sizes **************/
-#define imax 127     /* Number of points in the x-direction (use odd numbers only) */
-#define jmax 127     /* Number of points in the y-direction (use odd numbers only) */
+#define imax 65     /* Number of points in the x-direction (use odd numbers only) */
+#define jmax 65     /* Number of points in the y-direction (use odd numbers only) */
 #define neq 3       /* Number of equation to be solved ( = 3: mass, x-mtm, y-mtm) */
 
 /**********************************************/
@@ -42,7 +42,7 @@ using namespace std;
 
   const int nmax = 500000;             /* Maximum number of iterations */
   const int iterout = 5000;             /* Number of time steps between solution output */
-  const int imms = 0;                   /* Manufactured solution flag: = 1 for manuf. sol., = 0 otherwise */
+  const int imms = 1;                   /* Manufactured solution flag: = 1 for manuf. sol., = 0 otherwise */
   const int isgs = 1;                   /* Symmetric Gauss-Seidel  flag: = 1 for SGS, = 0 for point Jacobi */
   const int irstr = 0;                  /* Restart flag: = 1 for restart (file 'restart.in', = 0 for initial run */
   const int ipgorder = 0;               /* Order of pressure gradient: 0 = 2nd, 1 = 3rd (not needed) */
@@ -50,11 +50,11 @@ using namespace std;
   const int residualOut = 10;           /* Number of timesteps between residual output */
 
   const double cfl  = 0.9;              /* CFL number used to determine time step */
-  const double Cx = 0.01;               /* Parameter for 4th order artificial viscosity in x */
-  const double Cy = 0.01;               /* Parameter for 4th order artificial viscosity in y */
+  const double Cx = 0.0078125;               /* Parameter for 4th order artificial viscosity in x */
+  const double Cy = 0.0078125;               /* Parameter for 4th order artificial viscosity in y */
   const double toler = 1.e-10;          /* Tolerance for iterative residual convergence */
   const double rkappa = 0.1;            /* Time derivative preconditioning constant */
-  const double Re = 1000.0;              /* Reynolds number = rho*Uinf*L/rmu */
+  const double Re = 100.0;              /* Reynolds number = rho*Uinf*L/rmu */
   const double pinf = 0.801333844662;   /* Initial pressure (N/m^2) -> from MMS value at cavity center */
   const double uinf = 1.0;              /* Lid velocity (m/s) */
   const double rho = 1.0;               /* Density (kg/m^3) */
@@ -291,12 +291,13 @@ inline double pow4(double x)                      /* Returns x^4 ... Duplicates 
 /*--- Variables for file handling ---*/
 /*--- All files are globally accessible ---*/
   
-  FILE *fp1; /* For output of iterative residual history */
-  FILE *fp2; /* For output of field data (solution) */
-  FILE *fp3; /* For writing the restart file */
-  FILE *fp4; /* For reading the restart file */  
-  FILE *fp5; /* For output of final DE norms (only for MMS)*/  
-  FILE *fp6; /* For debug: Uncomment for debugging. */  
+FILE *fp1; /* For output of iterative residual history */
+FILE *fp2; /* For output of field data (solution) */
+FILE *fp3; /* For writing the restart file */
+FILE *fp4; /* For reading the restart file */  
+FILE *fp5; /* For output of final DE norms (only for MMS)*/  
+FILE *fp6; /* For debug: Uncomment for debugging. */  
+FILE *fp7; // simulation parameters to be stored
 
 /***********************************************************************************************************/
 /*      NOTE: The Main routine for this C++ code is found at the end                                       */
@@ -1075,13 +1076,13 @@ void SGS_forward_sweep( Array3& u, Array2& viscx, Array2& viscy, Array2& dt, Arr
 	// then the u-velocity update from the x-momentum equation
 	// and the v-velocity update from the y-momentum equation
 	u(i,j,0) = u(i,j,0) - beta2 * dti * rho * (dudx + dvdy) +
-	  beta2 * dti * (viscx(i,j) + viscy(i,j));
+	  beta2 * dti * (viscx(i,j) + viscy(i,j)) + beta2 * dti * s(i,j,0);
 
 	u(i,j,1) = u(i,j,1) - dti * u(i,j,1) * dudx - dti * u(i,j,2) * dudy -
-	  (dti/rho) * dpdx + dti * (rmu/rho) * d2udx2 + dti * (rmu/rho) * d2udy2;
+	  (dti/rho) * dpdx + dti * (rmu/rho) * d2udx2 + dti * (rmu/rho) * d2udy2 + (dti/rho) * s(i,j,1);
 
 	u(i,j,2) = u(i,j,2) - dti * u(i,j,1) * dvdx - dti * u(i,j,2) * dvdy -
-	  (dti/rho) * dpdy + dti * (rmu/rho) * d2vdx2 + dti * (rmu/rho) * d2vdy2;
+	  (dti/rho) * dpdy + dti * (rmu/rho) * d2vdx2 + dti * (rmu/rho) * d2vdy2 + (dti/rho) * s(i,j,2);
       }
     }
 
@@ -1153,17 +1154,15 @@ void SGS_backward_sweep( Array3& u, Array2& viscx, Array2& viscy, Array2& dt, Ar
 	// then the u-velocity update from the x-momentum equation
 	// and the v-velocity update from the y-momentum equation
 	u(i,j,0) = u(i,j,0) - beta2 * dti * rho * (dudx + dvdy) +
-	  beta2 * dti * (viscx(i,j) + viscy(i,j));
+	  beta2 * dti * (viscx(i,j) + viscy(i,j)) + beta2 * dti * s(i,j,0);
 
 	u(i,j,1) = u(i,j,1) - dti * u(i,j,1) * dudx - dti * u(i,j,2) * dudy -
-	  (dti/rho) * dpdx + dti * (rmu/rho) * d2udx2 + dti * (rmu/rho) * d2udy2;
+	  (dti/rho) * dpdx + dti * (rmu/rho) * d2udx2 + dti * (rmu/rho) * d2udy2 + (dti/rho) * s(i,j,1);
 
 	u(i,j,2) = u(i,j,2) - dti * u(i,j,1) * dvdx - dti * u(i,j,2) * dvdy -
-	  (dti/rho) * dpdy + dti * (rmu/rho) * d2vdx2 + dti * (rmu/rho) * d2vdy2;
+	  (dti/rho) * dpdy + dti * (rmu/rho) * d2vdx2 + dti * (rmu/rho) * d2vdy2 + (dti/rho) * s(i,j,2);
       }
     }
-
-
 }
 
 /**************************************************************************/
@@ -1229,13 +1228,13 @@ void point_Jacobi( Array3& u, Array3& uold, Array2& viscx, Array2& viscy, Array2
 	// then the u-velocity update from the x-momentum equation
 	// and the v-velocity update from the y-momentum equation
 	u(i,j,0) = uold(i,j,0) - beta2 * dti * rho * (dudx + dvdy) +
-	  beta2 * dti * (viscx(i,j) + viscy(i,j));
+	  beta2 * dti * (viscx(i,j) + viscy(i,j)) + beta2 * dti * s(i,j,0);
 
 	u(i,j,1) = uold(i,j,1) - dti * uold(i,j,1) * dudx - dti * uold(i,j,2) * dudy -
-	  (dti/rho) * dpdx + dti * (rmu/rho) * d2udx2 + dti * (rmu/rho) * d2udy2;
+	  (dti/rho) * dpdx + dti * (rmu/rho) * d2udx2 + dti * (rmu/rho) * d2udy2 + (dti/rho) * s(i,j,1);
 
 	u(i,j,2) = uold(i,j,2) - dti * uold(i,j,1) * dvdx - dti * uold(i,j,2) * dvdy -
-	  (dti/rho) * dpdy + dti * (rmu/rho) * d2vdx2 + dti * (rmu/rho) * d2vdy2;
+	  (dti/rho) * dpdy + dti * (rmu/rho) * d2vdx2 + dti * (rmu/rho) * d2vdy2 + (dti/rho) * s(i,j,2);
       }
     }
 
@@ -1493,6 +1492,18 @@ int main()
     fprintf(fp6, "I= %d J= %d\n",imax, jmax);
     fprintf(fp6, "DATAPACKING=POINT\n");
 
+    // add in another file with the simulation paramters to be read
+    fp7 = fopen("data/parameters.dat", "w");
+    fprintf(fp7, "imms=%d\n", imms);
+    fprintf(fp7, "isgs=%d\n", isgs);
+    fprintf(fp7, "imax=%d\n", imax);
+    fprintf(fp7, "jmax=%d\n", jmax);
+    fprintf(fp7, "cfl=%f\n", cfl);
+    fprintf(fp7, "re=%f\n", Re);
+    fprintf(fp7, "kappa=%f\n", rkappa);
+    fprintf(fp7, "cx=%f\n", Cx);
+    fprintf(fp7, "cy=%f\n", Cy);
+
     /* Set derived input quantities */
     set_derived_inputs();
 
@@ -1565,6 +1576,7 @@ notconverged:
     fclose(fp1);
     fclose(fp2);
     fclose(fp6); /* Uncomment for debug output */
+    fclose(fp7);
 
     return 0;
 }

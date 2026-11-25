@@ -35,7 +35,7 @@ plt: run
 
 # remove binary and data files
 clean:
-	rm -f $(TARGET) ./data/history.dat ./data/cavity.dat ./data/restart.out ./data/Debug.dat
+	rm -f $(TARGET) ./data/history.dat ./data/cavity.dat ./data/restart.out ./data/Debug.dat ./data/parameters.dat
 
 # list all targets
-.PHONY: all run clean
+.PHONY: all run clean debug gdb

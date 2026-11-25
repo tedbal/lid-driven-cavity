@@ -30,6 +30,28 @@ def read_soln_size(datafile):
     # return the results of the size of each index
     return i, j
 
+# define a function to read the metadata about the solution
+def read_parameters(datafile):
+    # initialize the dictionary
+    res = {}
+
+    # open the file, and iterate through each line
+    with open(datafile, 'r') as fi:
+        for line in fi:
+            # read the line, and split it into the name and value
+            line = line.strip()
+            name, val = line.split("=")
+
+            # turn the value into a float if "." in it, otherwise into an int
+            if "." in val:
+                val_num = float(val)
+            else:
+                val_num = int(val)
+
+            # read in the name and value into the result dictionary
+            res[name] = val_num
+
+    return res
 
 # define a function to read the solution
 def read_solution(datafile, n=-1):
@@ -120,7 +142,7 @@ def plot_iteration_history(history, savefile=None, ax=None):
 
 
 # define a plotting utility to take a solution data file and plot the results
-def plot_solution(res, nx, ny, savefile=None, axes=None):
+def plot_solution(res, nx, ny, savefile=None, axes=None, streamlines=True):
     # if the axis is none, create it
     if axes is None:
         fig, axes = plt.subplots(1, 3, figsize=(14, 4), sharey=True)
@@ -128,8 +150,9 @@ def plot_solution(res, nx, ny, savefile=None, axes=None):
     ax1, ax2, ax3 = axes
 
     # make a meshgrid of the x and y values
-    x = res.x.values.reshape((nx, ny))
-    y = res.y.values.reshape((nx, ny))
+    x = res.x.values.reshape((nx, ny))[:,0].T
+    y = res.y.values.reshape((nx, ny))[0,:].T
+    x, y = np.meshgrid(x, y, indexing='xy')
 
     # reshape each of the results so that they are readable by the
     p = res.p.values.reshape((nx, ny))
@@ -141,6 +164,11 @@ def plot_solution(res, nx, ny, savefile=None, axes=None):
     im2 = ax2.contourf(x, y, u, cmap='coolwarm')
     im3 = ax3.contourf(x, y, v, cmap='coolwarm')
     ims = [im1, im2, im3]
+
+    # plot streamlines (if applicable)
+    if streamlines:
+        ax2.streamplot(x, y, u, v, color='k', linewidth=0.2)
+        ax3.streamplot(x, y, u, v, color='k', linewidth=0.2)
 
     # format the plot
     ax1.set_ylabel("y [m]")
@@ -160,6 +188,53 @@ def plot_solution(res, nx, ny, savefile=None, axes=None):
     plt.show()
 
 
+
+
+# define a plotting utility to take a solution data file and plot the results
+def plot_de(res, nx, ny, savefile=None, axes=None):
+    # if the axis is none, create it
+    if axes is None:
+        fig, axes = plt.subplots(1, 3, figsize=(14, 4), sharey=True)
+        
+    ax1, ax2, ax3 = axes
+
+    # make a meshgrid of the x and y values
+    x = res.x.values.reshape((nx, ny))[:,0].T
+    y = res.y.values.reshape((nx, ny))[0,:].T
+    x, y = np.meshgrid(x, y, indexing='xy')
+
+    # reshape each of the results so that they are readable by the
+    p = res.dep.values.reshape((nx, ny))
+    u = res.deu.values.reshape((nx, ny))
+    v = res.dev.values.reshape((nx, ny))
+        
+    # plot the plot
+    im1 = ax1.contourf(x, y, p, cmap='Reds')
+    im2 = ax2.contourf(x, y, u, cmap='Reds')
+    im3 = ax3.contourf(x, y, v, cmap='Reds')
+    ims = [im1, im2, im3]
+
+    # format the plot
+    ax1.set_ylabel("y [m]")
+    ax1.set_title("Pressure\nDiscretization Error")
+    ax2.set_title("u Velocity\nDiscretization Error")
+    ax3.set_title("v Velocity\nDiscretization Error")
+    
+    for ax, im in zip(axes, ims):
+        ax.set_xlabel("x [m]")
+        ax.set_aspect(ny/nx)
+        plt.colorbar(im, ax=ax)
+    
+    # save it (if applicable) and show it
+    if savefile is not None:
+        plt.savefig(savefile, dpi=600, bbox_inches='tight')
+    plt.show()
+
+
+
+    
+    
+
 if __name__ == "__main__":
     # parse in the filename
     if len(sys.argv) > 1:
@@ -170,7 +245,11 @@ if __name__ == "__main__":
     # define the history and results file
     historyfile = f"{datapath}/history.dat"
     resultsfile = f"{datapath}/cavity.dat"
-        
+    paramsfile  = f"{datapath}/parameters.dat"
+
+    # read the parameters
+    params = read_parameters(paramsfile)
+    
     # read and plot the history
     history = read_convergence_history(historyfile)
     plot_iteration_history(history)
@@ -178,4 +257,9 @@ if __name__ == "__main__":
     # read in the results
     res = read_solution(resultsfile)
     nx, ny = read_soln_size(resultsfile)
+    # plot_solution(res, nx, ny, streamlines=False) # don't plot streamlines
     plot_solution(res, nx, ny)
+
+    # plot the discretization error (if applicable)
+    if "dep" in res.columns:
+        plot_de(res, nx, ny)
