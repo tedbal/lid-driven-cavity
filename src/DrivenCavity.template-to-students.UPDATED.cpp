@@ -11,8 +11,8 @@
 using namespace std;
 
 /************* Following are fixed parameters for array sizes **************/
-#define imax 65     /* Number of points in the x-direction (use odd numbers only) */
-#define jmax 65     /* Number of points in the y-direction (use odd numbers only) */
+#define imax 33     /* Number of points in the x-direction (use odd numbers only) */
+#define jmax 33     /* Number of points in the y-direction (use odd numbers only) */
 #define neq 3       /* Number of equation to be solved ( = 3: mass, x-mtm, y-mtm) */
 
 /**********************************************/
@@ -50,8 +50,8 @@ using namespace std;
   const int residualOut = 10;           /* Number of timesteps between residual output */
 
   const double cfl  = 0.9;              /* CFL number used to determine time step */
-  const double Cx = 0.0078125;               /* Parameter for 4th order artificial viscosity in x */
-  const double Cy = 0.0078125;               /* Parameter for 4th order artificial viscosity in y */
+  const double Cx = 0.007812;               /* Parameter for 4th order artificial viscosity in x */
+  const double Cy = 0.007812;               /* Parameter for 4th order artificial viscosity in y */
   const double toler = 1.e-10;          /* Tolerance for iterative residual convergence */
   const double rkappa = 0.1;            /* Time derivative preconditioning constant */
   const double Re = 100.0;              /* Reynolds number = rho*Uinf*L/rmu */
@@ -499,11 +499,11 @@ void bndry( Array3& u )
     // iterate through each x-point
     for (i = 0; i < imax; ++i) {
       // set the x- and y-velocities along the bottom
-      u(i, 0, 1) = uinf;
+      u(i, 0, 1) = 0;
       u(i, 0, 2) = 0;
 
       // set the x- and y-velocities along the top
-      u(i, jmax-1, 1) = 0;
+      u(i, jmax-1, 1) = uinf;
       u(i, jmax-1, 2) = 0;
 
       // calculate the pressure BC at the bottom and top walls
@@ -1126,8 +1126,8 @@ void SGS_backward_sweep( Array3& u, Array2& viscx, Array2& viscy, Array2& dt, Ar
     // except where the index i+1 or j+1 is used i use "u" instead of "uold"
     // and also i have flipped the order of the iteration
     
-    for (int i { imax-1 }; i > 1; --i) {
-      for (int j { jmax-1 }; j > 1; --j) {
+    for (int i { imax-2 }; i >= 1; --i) {
+      for (int j { jmax-2 }; j >= 1; --j) {
 	// calculate derivatives of the pressure term
 	dpdx = (u(i+1,j,0) - u(i-1,j,0)) / (two * dx);
 	dpdy = (u(i,j+1,0) - u(i,j-1,0)) / (two * dy);
@@ -1310,12 +1310,18 @@ void check_iterative_convergence(int n, Array3& u, Array3& uold, Array2& dt, dou
     for (i = 0; i < imax; ++i) {
       for (j = 0; j < jmax; ++j) {
 	for (k = 0; k < neq; ++k) {
-	  res[k] += sqrt(pow2(u(i,j,k) - uold(i,j,k)));
+	  res[k] += pow2(u(i,j,k) - uold(i,j,k));
 	}
       }
     }
 
-    // calculate the residual from
+    // calculate the L2 residual for each equation individually
+    // normalize by the number of grid nodes
+    // and the initial residual
+    for (k = 0; k < neq; ++k) {
+      res[k] = sqrt(res[k] / (imax * jmax)) / resinit[k];
+    }
+    
     conv = sqrt(pow2(res[0]) + pow2(res[1]) + pow2(res[2]));
 
     /* Write iterative residuals every "residualOut" iterations */

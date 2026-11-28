@@ -94,9 +94,7 @@ def read_solution(datafile, n=-1):
                 
                 if len(values) == len(columns):
                     try:
-                        current_block.append(
-                            [float(value) for value in values]
-                        )
+                        current_block.append([float(value) for value in values])
                     except ValueError:
                         continue
 
@@ -150,9 +148,8 @@ def plot_solution(res, nx, ny, savefile=None, axes=None, streamlines=True):
     ax1, ax2, ax3 = axes
 
     # make a meshgrid of the x and y values
-    x = res.x.values.reshape((nx, ny))[:,0].T
-    y = res.y.values.reshape((nx, ny))[0,:].T
-    x, y = np.meshgrid(x, y, indexing='xy')
+    x = res.x.values.reshape((nx, ny))
+    y = res.y.values.reshape((nx, ny))
 
     # reshape each of the results so that they are readable by the
     p = res.p.values.reshape((nx, ny))
@@ -166,9 +163,10 @@ def plot_solution(res, nx, ny, savefile=None, axes=None, streamlines=True):
     ims = [im1, im2, im3]
 
     # plot streamlines (if applicable)
+    U = np.sqrt(np.square(u) + np.square(v))
     if streamlines:
-        ax2.streamplot(x, y, u, v, color='k', linewidth=0.2)
-        ax3.streamplot(x, y, u, v, color='k', linewidth=0.2)
+        ax2.streamplot(x[:,0], y[0,:], u, v, color='k', linewidth=U, density=0.7, broken_streamlines=False)
+        ax3.streamplot(x[:,0], y[0,:], u, v, color='k', linewidth=U, density=0.7, broken_streamlines=False)
 
     # format the plot
     ax1.set_ylabel("y [m]")
@@ -199,9 +197,8 @@ def plot_de(res, nx, ny, savefile=None, axes=None):
     ax1, ax2, ax3 = axes
 
     # make a meshgrid of the x and y values
-    x = res.x.values.reshape((nx, ny))[:,0].T
-    y = res.y.values.reshape((nx, ny))[0,:].T
-    x, y = np.meshgrid(x, y, indexing='xy')
+    x = res.x.values.reshape((nx, ny))
+    y = res.y.values.reshape((nx, ny))
 
     # reshape each of the results so that they are readable by the
     p = res.dep.values.reshape((nx, ny))
@@ -231,7 +228,7 @@ def plot_de(res, nx, ny, savefile=None, axes=None):
     plt.show()
 
 
-
+ 
     
     
 
